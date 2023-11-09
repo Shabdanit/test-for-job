@@ -37,8 +37,12 @@ export class BookService {
     return book;
   }
 
-  async findAll(): Promise<Book[]> {
-    return this.bookRepository.findAll();
+  async findAll(page: number = 1, limit: number = 10): Promise<Book[]> {
+    const books = await this.bookRepository.find(
+      {},
+      { limit, offset: (page - 1) * limit },
+    );
+    return books;
   }
 
   async findOne(id: number): Promise<Book> {
