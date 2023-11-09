@@ -11,10 +11,13 @@ import { BookService } from './book/book.service';
 import { BookModule } from './book/book.module';
 import { MikroORM } from '@mikro-orm/core';
 import { DatabaseModule } from './database/database.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './auth/jwt-strategy';
 
 @Module({
   imports: [
     MikroOrmModule.forRoot(),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: 'super-secret',
       signOptions: { expiresIn: '1h' },
@@ -24,7 +27,7 @@ import { DatabaseModule } from './database/database.module';
     DatabaseModule,
   ],
   controllers: [AppController, UserController, BookController],
-  providers: [AppService, UserService, BookService],
+  providers: [AppService, UserService, BookService, JwtStrategy],
 })
 export class AppModule implements OnModuleDestroy {
   constructor(private readonly orm: MikroORM) {}

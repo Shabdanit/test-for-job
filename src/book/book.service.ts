@@ -10,6 +10,7 @@ import { UpdateBookDto } from './dto/update-book.dto';
 import { User } from 'src/entities/user.entity';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { InjectRepository } from '@mikro-orm/nestjs';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class BookService {
@@ -17,11 +18,22 @@ export class BookService {
     @InjectRepository(Book)
     private readonly bookRepository: EntityRepository<Book>,
     private readonly em: EntityManager,
+    private readonly userService: UserService,
   ) {}
 
-  async create(createBookDto: CreateBookDto, user: User): Promise<Book> {
-    const book = this.em.create(Book, { ...createBookDto, author: user });
+  async create(createBookDto: CreateBookDto, id: number): Promise<Book> {
+    const user = await this.userService.getOneOrFail(id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    console.log(user);
+    const book = this.bookRepository.create({
+      ...createBookDto,
+      owner: user,
+    });
+
     await this.bookRepository.persistAndFlush(book);
+
     return book;
   }
 
@@ -46,7 +58,7 @@ export class BookService {
     if (!book) {
       throw new NotFoundException('Book not found');
     }
-    if (book.author.id !== user.id) {
+    if (book.owner.id !== user.id) {
       throw new UnauthorizedException('You are not the owner of this book');
     }
     this.em.assign(book, updateBookDto);
@@ -59,7 +71,7 @@ export class BookService {
     if (!book) {
       throw new NotFoundException('Book not found');
     }
-    if (book.author.id !== user.id) {
+    if (book.owner.id !== user.id) {
       throw new UnauthorizedException('You are not the owner of this book');
     }
     await this.bookRepository.removeAndFlush(book);

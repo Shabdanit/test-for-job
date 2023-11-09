@@ -10,11 +10,14 @@ export class Book {
   title: string;
 
   @Property()
+  author: string;
+
+  @Property()
   year: number;
 
   @Property()
   description: string;
 
-  @ManyToOne(() => User)
-  author: User;
+  @ManyToOne(() => User.name)
+  owner: User;
 }

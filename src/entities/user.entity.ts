@@ -22,7 +22,7 @@ export class User {
   @Property({ hidden: true })
   password: string;
 
-  @OneToMany(() => Book, (book) => book.author)
+  @OneToMany(() => Book, (book) => book.owner)
   book = new Collection<Book>(this);
 
   async setPassword(password: string): Promise<void> {

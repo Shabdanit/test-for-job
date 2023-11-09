@@ -1,5 +1,8 @@
-// user.service.ts
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager } from '@mikro-orm/core';
 import { User } from '../entities/user.entity';
@@ -32,11 +35,20 @@ export class UserService {
 
     const payload = {
       userId: user.id,
-      username: user.name,
+      name: user.name,
       email: user.email,
     };
     const token = this.jwtService.sign(payload);
 
     return { token };
+  }
+
+  async getOneOrFail(id: number) {
+    const user = await this.userRepository.findOne({ id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 }
